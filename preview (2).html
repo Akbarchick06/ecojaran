@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="ky">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/style.css">
+  <title>EcoJaran — Экологиялык чат-бот</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f8f1;
+      color: #080808;
+      overflow-x: hidden;
+    }
+    img { max-width: 100%; display: block; }
+    a { color: inherit; }
+
+    .page {
+      max-width: 1080px;
+      margin: 0 auto;
+      background: #fff;
+      position: relative;
+      box-shadow: 0 18px 60px rgba(0,0,0,.08);
+    }
+
+    .topbar, .footer {
+      min-height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      position: relative;
+      z-index: 10;
+      font-size: 14px;
+    }
+
+    .logo {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 400;
+      font-style: italic;
+      color: #111;
+      white-space: nowrap;
+    }
+    .logo span {
+      font-style: normal;
+      font-weight: 950;
+      color: #3f7f00;
+      background: #fff;
+      border: 6px solid #8f53ff;
+      border-left: none;
+      padding: 0 4px;
+      margin-left: 2px;
+    }
+    .topbar .logo { top: 21px; }
+
+    .telegram-icon {
+      width: 78px;
+      height: 78px;
+      margin: 0 auto 14px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2AABEE, #168ACD);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 12px 30px rgba(42,171,238,.35);
+    }
+    .telegram-icon svg {
+      width: 44px;
+      height: 44px;
+    }
+
+    .hero {
+      min-height: 650px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 78px 32px 125px;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.84) 0%, rgba(255,255,255,.70) 58%, rgba(250,253,248,.96) 100%),
+        url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1600&q=85') center/cover no-repeat;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 140px;
+      background: linear-gradient(180deg, transparent, #fff);
+      z-index: 2;
+    }
+
+    .hero-content {
+      width: min(720px, 92%);
+      text-align: center;
+      position: relative;
+      z-index: 4;
+      margin-top: -18px;
+    }
+    .name-badge {
+      position: absolute;
+      left: -190px;
+      top: 34px;
+      background: #0fbb6d;
+      color: #fff;
+      font-size: 25px;
+      font-weight: 850;
+      padding: 10px 14px;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.24);
+      transform: rotate(-.5deg);
+      white-space: nowrap;
+    }
+    .small-badge {
+      position: absolute;
+      right: -52px;
+      bottom: -92px;
+      background: #16b974;
+      color: #fff;
+      font-size: 22px;
+      font-weight: 850;
+      padding: 8px 14px;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.24);
+      white-space: nowrap;
+    }
+    h1 {
+      font-size: clamp(52px, 8vw, 86px);
+      letter-spacing: -5px;
+      font-weight: 950;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    .quote {
+      max-width: 585px;
+      margin: 0 auto 24px;
+      padding: 13px 20px;
+      border: 4px solid #09a95f;
+      font-size: 15px;
+      line-height: 1.28;
+      font-style: italic;
+      background: rgba(255,255,255,.88);
+      backdrop-filter: blur(6px);
+    }
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      appearance: none;
+      border: 4px solid #0aa76a;
+      background: #437e00;
+      color: #fff;
+      font-size: 14px;
+      padding: 11px 34px;
+      cursor: pointer;
+      transition: .2s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn.alt {
+      background: #fff;
+      color: #2d6900;
+    }
+    .btn:hover { transform: translateY(-2px); filter: brightness(1.06); }
+
+    .cursor {
+      position: absolute;
+      right: 250px;
+      bottom: 185px;
+      width: 58px;
+      height: 58px;
+      background: #16b974;
+      clip-path: polygon(0 0,100% 42%,58% 57%,80% 100%,62% 100%,40% 63%,16% 86%);
+      transform: rotate(-10deg);
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,.28));
+      z-index: 5;
+    }
+
+    .leaf {
+      position: absolute;
+      width: 170px;
+      height: 95px;
+      background: url('https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=500&q=80') center/cover no-repeat;
+      border-radius: 60% 10% 60% 10%;
+      transform-origin: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,.18);
+      z-index: 1;
+    }
+    .leaf-1 { right: -44px; top: 75px; transform: rotate(-18deg) scale(1.1); }
+    .leaf-2 { right: 24px; top: 245px; transform: rotate(12deg) scale(1.35); }
+    .leaf-3 { right: 130px; top: 340px; transform: rotate(-13deg) scale(1.1); }
+    .leaf-4 { left: -80px; top: 165px; transform: rotate(28deg) scale(.9); }
+    .leaf-5 { left: 420px; bottom: 8px; transform: rotate(0deg) scale(1.25); }
+    .leaf-6 { left: 610px; bottom: -12px; transform: rotate(18deg) scale(1.15); }
+    .leaf-7 { left: 760px; bottom: -20px; transform: rotate(-20deg) scale(1.1); }
+
+    .info, .nature, .timeline-section, .mindset-section, .emotion-section, .behavior-section, .project, .chatbot-section {
+      padding: 58px 48px 64px;
+    }
+    .info, .project, .emotion-section { background: #fff; }
+    .nature, .timeline-section, .mindset-section, .behavior-section, .chatbot-section { background: #f7f9f5; }
+
+    .section-title {
+      text-align: center;
+      font-size: 31px;
+      font-weight: 950;
+      letter-spacing: -1.2px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    .section-text {
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto 36px;
+      font-size: 15px;
+      line-height: 1.35;
+      font-style: italic;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      text-align: center;
+    }
+    .card {
+      min-height: 268px;
+      background: #f5f5f5;
+      overflow: hidden;
+      border-radius: 2px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.07);
+    }
+    .card-img {
+      height: 154px;
+      position: relative;
+      overflow: hidden;
+      background: #efefef;
+    }
+    .card-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .35s ease;
+    }
+    .card:hover .card-img img { transform: scale(1.07); }
+    .card-body { padding: 13px 11px 17px; background: #fff; }
+    .card h3 { font-size: 14px; font-weight: 900; margin-bottom: 5px; }
+    .card p { font-size: 11.5px; line-height: 1.22; }
+
+    .nature-grid, .timeline-layout, .project-grid, .chatbot-wrap {
+      display: grid;
+      gap: 24px;
+      align-items: stretch;
+    }
+    .nature-grid { grid-template-columns: 1fr 1fr; }
+    .timeline-layout, .project-grid, .chatbot-wrap { grid-template-columns: .95fr 1.05fr; }
+
+    .nature-photo {
+      min-height: 360px;
+      overflow: hidden;
+      border: 4px solid #0aa76a;
+      background: #dcead7;
+    }
+    .nature-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .nature-box, .research-box, .project-box {
+      background: #fff;
+      border: 4px solid #0aa76a;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .nature-box h2, .research-box h2, .project-box h2, .chatbot-copy h2 {
+      font-size: 30px;
+      line-height: 1;
+      letter-spacing: -1.2px;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+    .nature-box p, .nature-box li, .research-box p, .research-box li, .project-box p, .project-box li, .chatbot-copy p, .chatbot-copy li {
+      font-size: 14px;
+      line-height: 1.48;
+    }
+    .nature-box ul, .research-box ul, .project-box ul, .chatbot-copy ul { margin: 14px 0 0 18px; }
+
+    .problem-solution {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .ps-card {
+      padding: 16px;
+      background: #f7f9f5;
+      border-left: 6px solid #16b974;
+      min-height: 150px;
+    }
+    .ps-card strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .timeline {
+      position: relative;
+      display: grid;
+      gap: 12px;
+    }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 13px;
+      top: 8px;
+      bottom: 8px;
+      width: 3px;
+      background: #0aa76a;
+    }
+    .timeline-item {
+      position: relative;
+      padding: 16px 18px 16px 42px;
+      background: #fff;
+      border: 1px solid #dcebd7;
+    }
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      left: 5px;
+      top: 20px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #16b974;
+      border: 4px solid #fff;
+      box-shadow: 0 0 0 2px #0aa76a;
+    }
+    .timeline-item time {
+      display: inline-block;
+      background: #3c7d00;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 4px 8px;
+      margin-bottom: 8px;
+    }
+    .timeline-item h3 { font-size: 16px; margin-bottom: 5px; }
+    .timeline-item p { font-size: 13px; line-height: 1.35; }
+
+    .mindset-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      margin-top: 26px;
+    }
+    .mind-card {
+      background: #fff;
+      border-left: 6px solid #16b974;
+      padding: 22px;
+      box-shadow: 0 8px 22px rgba(0,0,0,.06);
+    }
+    .mind-card h3 { font-size: 20px; margin-bottom: 10px; }
+    .mind-card p { font-size: 14px; line-height: 1.5; }
+
+    .emotion-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .emotion-box {
+      padding: 28px;
+      min-height: 220px;
+      color: #fff;
+    }
+    .problem-side { background: linear-gradient(135deg, #7a1f1f, #c0392b); }
+    .solution-side { background: linear-gradient(135deg, #2d6a4f, #16b974); }
+    .emotion-box h2 {
+      font-size: 30px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+    .emotion-box p { font-size: 15px; line-height: 1.5; }
+
+    .behavior-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 24px;
+    }
+    .behavior-step {
+      background: #fff;
+      text-align: center;
+      padding: 24px 16px;
+      box-shadow: 0 8px 22px rgba(0,0,0,.06);
+      border-top: 5px solid #16b974;
+    }
+    .behavior-step span {
+      display: inline-flex;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      align-items: center;
+      justify-content: center;
+      background: #16b974;
+      color: #fff;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    .behavior-step h3 { font-size: 18px; margin-bottom: 8px; }
+    .behavior-step p { font-size: 13px; line-height: 1.4; }
+
+    .impact-banner {
+      padding: 50px 48px;
+      background: linear-gradient(135deg, #3c7d00, #16b974);
+      color: #fff;
+      text-align: center;
+    }
+    .impact-inner h2 {
+      font-size: 34px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    .impact-inner p {
+      max-width: 700px;
+      margin: 0 auto;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .stat {
+      background: #3c7d00;
+      color: #fff;
+      padding: 18px 14px;
+      min-height: 123px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .stat strong { font-size: 28px; line-height: 1; margin-bottom: 8px; }
+    .stat span { font-size: 12px; line-height: 1.25; }
+
+    .chatbot-copy .telegram-icon {
+      margin-left: 0;
+      margin-right: auto;
+    }
+    .chatbot-photo {
+      height: 210px;
+      border: 4px solid #0aa76a;
+      margin-bottom: 18px;
+      overflow: hidden;
+      background:
+        linear-gradient(120deg, rgba(255,255,255,.18), rgba(255,255,255,.75)),
+        url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1000&q=80') center/cover no-repeat;
+      position: relative;
+    }
+    .task-note {
+      position: absolute;
+      min-width: 138px;
+      padding: 12px 14px;
+      font-size: 22px;
+      line-height: 1.05;
+      font-weight: 800;
+      color: #07428a;
+      box-shadow: 0 8px 22px rgba(0,0,0,.18);
+      transform: rotate(-1deg);
+    }
+    .task-note.todo { left: 22px; bottom: 22px; background: #b483ff; }
+    .task-note.doing { left: 170px; bottom: 78px; background: #fff2a9; transform: rotate(2deg); }
+    .task-note.done { right: 24px; top: 28px; background: #ff4db8; transform: rotate(1deg); }
+
+    .phone {
+      max-width: 360px;
+      margin-left: auto;
+      border: 5px solid #111;
+      border-radius: 34px;
+      padding: 14px;
+      background: #111;
+      box-shadow: 0 25px 50px rgba(0,0,0,.22);
+    }
+    .phone-screen {
+      background: #f2f7ef;
+      border-radius: 24px;
+      overflow: hidden;
+      min-height: 510px;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-head {
+      background: #16b974;
+      color: #fff;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .bot-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2AABEE, #168ACD);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .bot-avatar svg { width: 24px; height: 24px; }
+    .chat-head strong { display: block; font-size: 15px; }
+    .chat-head span { font-size: 11px; opacity: .9; }
+    .chat-body { padding: 16px; flex: 1; }
+    .msg {
+      max-width: 82%;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      line-height: 1.35;
+      border-radius: 14px;
+    }
+    .msg.bot {
+      background: #fff;
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+    .msg.user {
+      background: #3c7d00;
+      color: #fff;
+      margin-left: auto;
+      border-bottom-right-radius: 4px;
+    }
+    .quick-buttons { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 12px; }
+    .quick-buttons button {
+      border: 2px solid #16b974;
+      background: #fff;
+      color: #0d633a;
+      padding: 9px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .chat-input {
+      display: flex;
+      gap: 8px;
+      padding: 12px;
+      background: #fff;
+      border-top: 1px solid #dfeadd;
+    }
+    .chat-input input {
+      flex: 1;
+      border: 1px solid #cfe0cb;
+      border-radius: 18px;
+      padding: 10px 12px;
+      outline: none;
+      font-size: 12px;
+    }
+    .chat-input button {
+      border: none;
+      background: #16b974;
+      color: #fff;
+      width: 42px;
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .floating-mobile {
+      display: none;
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 50;
+      background: linear-gradient(135deg, #2AABEE, #168ACD);
+      color: #fff;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      box-shadow: 0 12px 30px rgba(0,0,0,.24);
+      font-size: 24px;
+    }
+    .floating-mobile svg { width: 30px; height: 30px; }
+
+    .footer { background: #3c7d00; color: #fff; min-height: 140px; }
+    .footer .logo { color: #000; font-size: 26px; }
+    .footer .logo span { border: none; padding: 0 4px; color: #3c7d00; }
+
+    @media (max-width: 900px) {
+      .cards { grid-template-columns: repeat(2, 1fr); }
+      .name-badge { left: -82px; top: -46px; font-size: 21px; }
+      .small-badge { right: -18px; }
+      .behavior-steps { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 760px) {
+      .page { max-width: 100%; box-shadow: none; }
+      .topbar, .footer {
+        min-height: 88px;
+        padding: 18px 20px;
+        align-items: flex-end;
+        font-size: 12px;
+      }
+      .logo { font-size: 21px; top: 18px; }
+      .logo span { border-width: 4px; }
+
+      .hero {
+        min-height: 620px;
+        padding: 100px 18px 105px;
+        background-position: center;
+      }
+      .hero-content { width: 100%; margin-top: 0; }
+      h1 { font-size: clamp(42px, 14vw, 62px); letter-spacing: -3px; }
+      .quote { font-size: 13px; padding: 12px 14px; }
+      .btn-row { gap: 8px; }
+      .btn { width: 100%; max-width: 280px; padding: 11px 18px; }
+      .name-badge {
+        left: 50%;
+        top: -68px;
+        transform: translateX(-50%);
+        font-size: 19px;
+      }
+      .small-badge {
+        right: 50%;
+        transform: translateX(50%);
+        bottom: -76px;
+        font-size: 18px;
+      }
+      .cursor { display: none; }
+      .leaf { width: 118px; height: 70px; opacity: .92; }
+      .leaf-1 { right: -34px; top: 120px; }
+      .leaf-2 { right: -22px; top: 405px; }
+      .leaf-3, .leaf-6, .leaf-7 { display: none; }
+      .leaf-4 { left: -45px; top: 260px; }
+      .leaf-5 { left: 55%; bottom: 20px; transform: rotate(0deg) scale(1); }
+
+      .info, .nature, .timeline-section, .mindset-section, .emotion-section, .behavior-section, .project, .chatbot-section { padding: 46px 20px; }
+      .section-title, .nature-box h2, .research-box h2, .project-box h2, .chatbot-copy h2 { font-size: 25px; letter-spacing: -.8px; }
+      .section-text { font-size: 13px; margin-bottom: 24px; }
+      .cards, .nature-grid, .timeline-layout, .mindset-grid, .emotion-wrap, .project-grid, .chatbot-wrap { grid-template-columns: 1fr; }
+      .card { min-height: auto; }
+      .card-img { height: 190px; }
+      .card p { font-size: 12px; }
+      .nature-photo { min-height: 260px; order: -1; }
+      .nature-box, .research-box, .project-box { padding: 22px; }
+      .problem-solution, .stats, .behavior-steps { grid-template-columns: 1fr 1fr; }
+      .stat { min-height: 110px; }
+      .phone { margin: 0 auto; width: 100%; max-width: 350px; }
+      .floating-mobile { display: flex; }
+    }
+
+    @media (max-width: 480px) {
+      .topbar span, .topbar a, .footer span, .footer a { max-width: 82px; line-height: 1.1; }
+      .hero { min-height: 610px; }
+      .cards, .stats, .problem-solution, .behavior-steps { grid-template-columns: 1fr; }
+      .stat { min-height: 96px; }
+      .phone { border-width: 4px; border-radius: 28px; padding: 10px; }
+      .phone-screen { min-height: 485px; border-radius: 22px; }
+      .msg { max-width: 90%; }
+      .task-note { min-width: 112px; font-size: 17px; padding: 10px 11px; }
+      .task-note.todo { left: 12px; bottom: 20px; }
+      .task-note.doing { left: 94px; bottom: 82px; }
+      .task-note.done { right: 12px; top: 26px; }
+      .impact-banner { padding: 40px 20px; }
+      .impact-inner h2 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <span>Башкы бет</span>
+      <div class="logo">Eco<span>JARAN</span></div>
+      <a href="#timeline" style="text-decoration:none;">Хронология</a>
+    </header>
+
+    <section class="hero">
+      <div class="leaf leaf-1"></div>
+      <div class="leaf leaf-2"></div>
+      <div class="leaf leaf-3"></div>
+      <div class="leaf leaf-4"></div>
+      <div class="leaf leaf-5"></div>
+      <div class="leaf leaf-6"></div>
+      <div class="leaf leaf-7"></div>
+
+      <div class="hero-content">
+        <div class="telegram-icon" aria-label="Telegram белгиси">
+          <svg viewBox="0 0 240 240" aria-hidden="true">
+            <path fill="#fff" d="M98.2 158.8 94.3 213c5.6 0 8-2.4 10.9-5.3l26.2-25.1 54.3 39.8c10 5.5 17 2.6 19.7-9.2L241 46.2c3.2-14.8-5.4-20.6-15.1-17L16.5 109.9c-14.3 5.6-14.1 13.6-2.4 17.2l53.5 16.7L191.8 65.5c5.8-3.8 11-1.7 6.7 2.1L98.2 158.8Z"/>
+          </svg>
+        </div>
+        <div class="name-badge">Табиятты сүйгөн жаран</div>
+        <h1>EcoJaran</h1>
+        <p class="quote">EcoJaran — жаратылыш менен таттуу мамиледе болууга чакырган Telegram чат-бот. Жаран таштанды жаткан жерди сүрөткө тартып жөнөтөт, бот маалыматты базага сактап, жооптуу тарапка кабар берет.</p>
+        <div class="btn-row">
+          <a class="btn" href="#project">Долбоорду көрүү</a>
+          <a class="btn alt" href="https://t.me/eco_jaran_bot?text=%40">Telegram ботту көрүү</a>
+        </div>
+        <div class="small-badge">Кыргызча чат-бот</div>
+      </div>
+
+      <div class="cursor"></div>
+    </section>
+
+    <section id="info" class="info">
+      <h2 class="section-title">Табиятка аяр мамиле</h2>
+      <p class="section-text">Кыргызстандын тоолору, суулары, жайлоолору жана таза абасы — баарыбыздын байлыгыбыз. EcoJaran адамдарды таштандыны туура башкарууга, айлана-чөйрөнү коргоого жана таза жашоо маданиятына үндөйт.</p>
+
+      <div class="cards">
+        <article class="card">
+          <div class="card-img"><img loading="lazy" src="https://images.unsplash.com/photo-1604187351574-c75ca79f5807?auto=format&fit=crop&w=900&q=80" alt="Таштандыны туура башкаруу"></div>
+          <div class="card-body">
+            <h3>Көйгөй</h3>
+            <p>Таштанды топтолгон жерлер көп учурда байкалбай калат же убагында билдирилбейт.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="card-img"><img loading="lazy" src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&w=900&q=80" alt="Кайра иштетүү жана сорттоо"></div>
+          <div class="card-body">
+            <h3>Чечим</h3>
+            <p>Жаран сүрөт, дарек жана түшүндүрмө жөнөтөт. Бот маалыматты иреттеп сактайт.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="card-img"><img loading="lazy" src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80" alt="Санариптик чат-бот чечими"></div>
+          <div class="card-body">
+            <h3>Чат-бот</h3>
+            <p>Кыргызча меню, автоматтык жооптор, билдирүү номери, статус жана эко-кеңештер.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="card-img"><img loading="lazy" src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=900&q=80" alt="Таза табият жана жашыл аймак"></div>
+          <div class="card-body">
+            <h3>Натыйжа</h3>
+            <p>Адамдар табиятка жоопкерчиликтүү мамиле кылып, таза аймак түзүүгө катышат.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="nature">
+      <div class="nature-grid">
+        <div class="nature-photo">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1470770903676-69b98201ea1c?auto=format&fit=crop&w=1100&q=85" alt="Тоо, көл жана таза жаратылыш">
+        </div>
+        <div class="nature-box">
+          <h2>Жаратылыш менен таттуу мамиле</h2>
+          <p>EcoJaran долбоору адам менен табияттын ортосундагы байланышты күчөтөт. Максат — жөн гана билдирүү кабыл алуу эмес, адамдардын күнүмдүк жүрүм-турумун өзгөртүү.</p>
+          <ul>
+            <li>таштандыны туш келди ыргытпоого үндөйт;</li>
+            <li>таза аймак үчүн коомдук катышууну күчөтөт;</li>
+            <li>балдарга жана студенттерге эко-маданият үйрөтөт;</li>
+            <li>жаратылышты сүйүү идеясын санарип форматта жайылтат.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="timeline" class="timeline-section">
+      <h2 class="section-title">1991–2026 хронология</h2>
+      <p class="section-text">Бул бөлүм EcoJaran долбоорунун 30 жылдан ашык экологиялык өзгөрүүлөргө жооп катары пайда болгонун көрсөтөт: көз карандысыздык мезгилинен тартып санариптик экологиялык чечимдерге чейинки жол.</p>
+
+      <div class="timeline-layout">
+        <div class="research-box">
+          <h2>30 жылдык изилдөө процесси</h2>
+          <p><b>Изилдөөнүн негизги ою:</b> экологиялык көйгөйлөр бир күндө пайда болгон жок. 1991-жылдан кийин шаарлашуу, транспорт, турмуш-тиричилик таштандылары, маалыматтын жетишсиздиги жана жарандык катышуунун алсыздыгы акырындык менен чоң маселеге айланды.</p>
+          <div class="problem-solution">
+            <div class="ps-card">
+              <strong>Көйгөй</strong>
+              <p>Таштанды жаткан жерди тез билдирүү, жооптуу тарапка жеткирүү жана аткарылышын көзөмөлдөө үчүн жөнөкөй санариптик канал жетишсиз.</p>
+            </div>
+            <div class="ps-card">
+              <strong>Чечим</strong>
+              <p>EcoJaran чат-боту сүрөт, дарек, геолокация жана статус аркылуу көйгөйдү иреттеп, жаран менен админдин ортосунда көпүрө түзөт.</p>
+            </div>
+          </div>
+          <ul>
+            <li>1-этап: көйгөйдү байкоо жана маалымат чогултуу;</li>
+            <li>2-этап: себептерди талдоо — таштанды, адат, көзөмөл, маалымат;</li>
+            <li>3-этап: чат-бот аркылуу MVP чечим чыгаруу;</li>
+            <li>4-этап: карта, рейтинг, эко-упай жана коомдук акциялар.</li>
+          </ul>
+        </div>
+
+        <div class="timeline">
+          <article class="timeline-item"><time>1991</time><h3>Көз карандысыздык жана жаңы башкаруу этабы</h3><p>Кыргызстан өз алдынча өнүгүү жолуна түшүп, жаратылыш ресурстарын коргоо жана коомдук жоопкерчилик маселелери жаңы шартта карала баштады.</p></article>
+          <article class="timeline-item"><time>1995–1999</time><h3>Экологиялык укуктук негиздер</h3><p>Экологияны коргоо боюнча мыйзамдык база калыптанып, айлана-чөйрөгө тийгизген таасирди баалоо жана жоопкерчилик түшүнүктөрү күчөдү.</p></article>
+          <article class="timeline-item"><time>2000–2005</time><h3>Шаардык таштанды маселеси</h3><p>Калктын керектөөсү көбөйүп, пластик, кагаз, тиричилик калдыктары жана полигон маселелери практикалык көйгөй катары байкалды.</p></article>
+          <article class="timeline-item"><time>2006–2010</time><h3>Транспорт, аба жана суу маселелери</h3><p>Шаарларда автоунаа көбөйүп, абанын булганышы, суу булактарын сактоо жана жашыл аймактарды коргоо темалары күчөдү.</p></article>
+          <article class="timeline-item"><time>2011–2015</time><h3>Климат жана коомдук аң-сезим</h3><p>Климаттын өзгөрүшү, мөңгүлөр, суу ресурстары жана жарандардын экологиялык маданияты тууралуу талкуулар көбөйдү.</p></article>
+          <article class="timeline-item"><time>2016–2018</time><h3>Санариптик мүмкүнчүлүктөр</h3><p>Смартфон, интернет жана мессенджерлер кеңири колдонулуп, жарандык билдирүүлөрдү онлайн кабыл алуу мүмкүнчүлүгү пайда болду.</p></article>
+          <article class="timeline-item"><time>2019–2023</time><h3>Жашыл экономика багыты</h3><p>Жашыл экономика, жашыл шаарлар, калдыктарды башкаруу, кайра иштетүү жана экологиялык транспорт маанилүү темага айланды.</p></article>
+          <article class="timeline-item"><time>2024–2026</time><h3>EcoJaran — практикалык чечим</h3><p>Долбоор MVP катары сунушталат: кыргызча Telegram чат-бот, таштанды билдирүү, геолокация, статус, эко-кеңештер жана жарандык активдүүлүк.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="mindset" class="mindset-section">
+      <h2 class="section-title">Жарандын аң-сезими жана экология</h2>
+      <p class="section-text">Мусор маселеси жөн гана тазалык маселеси эмес. Бул — адамдын аң-сезими, жоопкерчилиги, коомдук маданияты жана табиятка болгон мамилесинин күзгүсү.</p>
+
+      <div class="mindset-grid">
+        <div class="mind-card">
+          <h3>🧠 Психологиялык түшүнүк</h3>
+          <p>Адам көбүнчө айлана-чөйрөнүн жүрүм-турумун кайталайт. Эгер айлана таза болсо, өзү да таштанды таштоодон карманат.</p>
+        </div>
+        <div class="mind-card">
+          <h3>🌱 Ички жоопкерчилик</h3>
+          <p>Табиятка аяр мамиле — мыйзамдан мурда адамдын ички тарбиясына байланыштуу. Тазалыкка болгон мамиле үй-бүлөдөн жана коомдук чөйрөдөн калыптанат.</p>
+        </div>
+        <div class="mind-card">
+          <h3>🤝 Коомдук таасир</h3>
+          <p>Бир адамдын аракети башка адамдарды да шыктандырат. Жаран көйгөйдү билдирсе, ал башкаларга да үлгү болот.</p>
+        </div>
+        <div class="mind-card">
+          <h3>💚 EcoJaran миссиясы</h3>
+          <p>EcoJaran мусорду гана көрсөтпөйт. Ал “мен бул аймак үчүн жооптуумун” деген түшүнүктү күчөтөт.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="emotion-section">
+      <div class="emotion-wrap">
+        <div class="emotion-box problem-side">
+          <h2>Көйгөй</h2>
+          <p>Мусор көбөйгөн сайын адамдардын жаратылышка болгон сезими да алсырайт. Кир аймак кайдыгерлик жана “бул менин ишим эмес” деген психологияны пайда кылат.</p>
+        </div>
+        <div class="emotion-box solution-side">
+          <h2>Чечим</h2>
+          <p>Жаранга жөнөкөй инструмент берилсе, ал активдүү болот. EcoJaran көйгөйдү сүрөткө тартып жөнөтүүнү жеңилдетет, аң-сезим ойгонот, жоопкерчилик күчөйт.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="behavior-section">
+      <h2 class="section-title">Жүрүм-турумду өзгөртүү механизми</h2>
+      <div class="behavior-steps">
+        <div class="behavior-step"><span>1</span><h3>Көрөт</h3><p>Жаран көйгөйдү байкайт.</p></div>
+        <div class="behavior-step"><span>2</span><h3>Сезет</h3><p>Аймак үчүн жоопкерчилик сезими пайда болот.</p></div>
+        <div class="behavior-step"><span>3</span><h3>Аракет кылат</h3><p>EcoJaran аркылуу сүрөт жана дарек жөнөтөт.</p></div>
+        <div class="behavior-step"><span>4</span><h3>Таасир калтырат</h3><p>Көйгөй көрүнүктүү болуп, тазалоо процесси башталат.</p></div>
+      </div>
+    </section>
+
+    <section class="impact-banner">
+      <div class="impact-inner">
+        <h2>Бир сүрөт — бир өзгөрүү</h2>
+        <p>EcoJaran аркылуу жөнөтүлгөн ар бир билдирүү жарандык жоопкерчиликти, экологиялык аң-сезимди жана коомдук активдүүлүктү күчөтөт.</p>
+      </div>
+    </section>
+
+    <section id="project" class="project">
+      <div class="project-grid">
+        <div class="project-box">
+          <h2>Проекттин максаты</h2>
+          <p><b>EcoJaran</b> — экологиялык көйгөйлөрдү коомчулук менен бирге чечүүгө багытталган кыргызча Telegram чат-бот. Бот таштанды жаткан жерлер тууралуу маалыматтарды чогултат, админге жөнөтөт жана тазалоо процессин көзөмөлдөөгө жардам берет.</p>
+          <ul>
+            <li>таштанды тууралуу сүрөт менен билдирүү жөнөтүү;</li>
+            <li>дарек же геолокация кошуу;</li>
+            <li>админ аркылуу билдирүүлөрдү текшерүү;</li>
+            <li>“жаңы”, “каралды”, “тазаланды” статустарын берүү;</li>
+            <li>активдүү колдонуучуларга эко-упай берүү;</li>
+            <li>чат-бот аркылуу суроолорго жооп берүү жана багыт көрсөтүү.</li>
+          </ul>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><strong>01</strong><span>Жаран таштандыны сүрөткө тартып ботко жөнөтөт.</span></div>
+          <div class="stat"><strong>02</strong><span>Бот маалыматты SQLite же Firebase базасына сактайт.</span></div>
+          <div class="stat"><strong>03</strong><span>Админ билдирүүнү көрүп, статусун өзгөртө алат.</span></div>
+          <div class="stat"><strong>04</strong><span>Кийин карта, рейтинг жана эко-бонус системасы кошулат.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="chatbot" class="chatbot-section">
+      <div class="chatbot-wrap">
+        <div class="chatbot-copy">
+          <div class="telegram-icon" aria-label="Telegram сүрөтү">
+            <svg viewBox="0 0 240 240" aria-hidden="true">
+              <path fill="#fff" d="M98.2 158.8 94.3 213c5.6 0 8-2.4 10.9-5.3l26.2-25.1 54.3 39.8c10 5.5 17 2.6 19.7-9.2L241 46.2c3.2-14.8-5.4-20.6-15.1-17L16.5 109.9c-14.3 5.6-14.1 13.6-2.4 17.2l53.5 16.7L191.8 65.5c5.8-3.8 11-1.7 6.7 2.1L98.2 158.8Z"/>
+            </svg>
+          </div>
+          <div class="chatbot-photo" aria-label="Иштин этаптары кыргызча көрсөтүлгөн сүрөт">
+            <div class="task-note todo">Жасайбыз</div>
+            <div class="task-note doing">Аткарылып жатат</div>
+            <div class="task-note done">Даяр</div>
+          </div>
+          <h2>Telegram бот кандай иштейт?</h2>
+          <p>EcoJaran колдонуучу менен жөнөкөй диалог аркылуу иштейт. Бот кайсы маалымат керек экенин өзү сурайт: сүрөт, дарек, көйгөйдүн түрү жана кошумча түшүндүрмө.</p>
+          <ul>
+            <li>“Таштанды тууралуу билдирүү” менюсу;</li>
+            <li>сүрөт жана геолокация кабыл алуу;</li>
+            <li>эко-кеңештерди автоматтык берүү;</li>
+            <li>колдонуучуга билдирүү номери жана статус көрсөтүү.</li>
+          </ul>
+        </div>
+
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="chat-head">
+              <div class="bot-avatar">
+                <svg viewBox="0 0 240 240" aria-hidden="true">
+                  <path fill="#fff" d="M98.2 158.8 94.3 213c5.6 0 8-2.4 10.9-5.3l26.2-25.1 54.3 39.8c10 5.5 17 2.6 19.7-9.2L241 46.2c3.2-14.8-5.4-20.6-15.1-17L16.5 109.9c-14.3 5.6-14.1 13.6-2.4 17.2l53.5 16.7L191.8 65.5c5.8-3.8 11-1.7 6.7 2.1L98.2 158.8Z"/>
+                </svg>
+              </div>
+              <div>
+                <strong>EcoJaran Bot</strong>
+                <span>online • табияттын досу</span>
+              </div>
+            </div>
+            <div class="chat-body">
+              <div class="msg bot">Салам! Мен EcoJaran ботмун 🌱 Табиятты бирге коргойлу.</div>
+              <div class="msg user">Таштанды жаткан жерди билдирейин.</div>
+              <div class="msg bot">Сүрөт жөнөтүңүз жана дарегин жазыңыз.</div>
+              <div class="msg user">Манас шаары, колледждин жанында.</div>
+              <div class="msg bot">✅ Билдирүү кабыл алынды. Номери: #024. Админ текшергенден кийин статус өзгөрөт.</div>
+              <div class="quick-buttons">
+                <button>📸 Таштанды билдирүү</button>
+                <button>♻ Эко кеңештер</button>
+                <button>🏆 Менин упайым</button>
+              </div>
+            </div>
+            <div class="chat-input">
+              <input type="text" placeholder="Билдирүү жазыңыз..." />
+              <button>➤</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>Жашыл долбоор</span>
+      <div class="logo">Eco<span>JARAN</span></div>
+      <a href="#" style="text-decoration:none;">Жогору</a>
+    </footer>
+  </main>
+
+  <a class="floating-mobile" href="#chatbot" aria-label="Telegram бот бөлүмүнө өтүү">
+    <svg viewBox="0 0 240 240" aria-hidden="true">
+      <path fill="#fff" d="M98.2 158.8 94.3 213c5.6 0 8-2.4 10.9-5.3l26.2-25.1 54.3 39.8c10 5.5 17 2.6 19.7-9.2L241 46.2c3.2-14.8-5.4-20.6-15.1-17L16.5 109.9c-14.3 5.6-14.1 13.6-2.4 17.2l53.5 16.7L191.8 65.5c5.8-3.8 11-1.7 6.7 2.1L98.2 158.8Z"/>
+    </svg>
+  </a>
+</body>
+</html>
